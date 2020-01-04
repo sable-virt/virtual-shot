@@ -39,7 +39,7 @@ const App: React.FC = () => {
     } else {
       setStream(null)
     }
-  }, [stream, deviceId, loadDevice])
+  }, [deviceId, loadDevice])
   useEffect(() => {
     const _stream = stream
     return () => {
