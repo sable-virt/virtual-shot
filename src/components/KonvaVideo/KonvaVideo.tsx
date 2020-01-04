@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { KonvaEventObject } from 'konva/types/Node'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Image, Transformer } from 'react-konva'
 import ColorMatrix from '../../filters/ColorMatrixFilter'
 import { createVideoElement, resizeContain } from './helpers'
@@ -13,15 +13,24 @@ const GREENBACK_MATRIX = [
 ]
 const COLOR_MATRIX_FILTER = ColorMatrix(GREENBACK_MATRIX)
 interface Props {
-  stream: MediaStream | undefined
+  stream: MediaStream | null
+  x: number
+  y: number
   width: number
   height: number
   selected: boolean
   onSelect: () => void
 }
-const KonvaVideo: React.FC<Props> = props => {
+export interface KonvaVideoHandler {
+  start(): void
+  stop(): void
+  toggle(): boolean
+}
+const KonvaVideo: React.RefForwardingComponent<KonvaVideoHandler, Props> = (props, ref) => {
   const {
     stream,
+    x,
+    y,
     width,
     height,
     selected,
@@ -29,8 +38,10 @@ const KonvaVideo: React.FC<Props> = props => {
   } = props
   const trRef = React.useRef<any>()
   const _videoRef = useRef<Konva.Image>(null)
-  const [position, setPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
-  const [size, setSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
+  const _animationRef = useRef<Konva.Animation>()
+  const _pauseRef = useRef(false)
+  const [position, setPosition] = useState<{ x: number, y: number }>({ x, y })
+  const [size, setSize] = useState<{ width: number, height: number }>({ width, height })
   const _handleOnCheckSize = useCallback((e: Event) => {
     const target = e.target as HTMLVideoElement
     const size = resizeContain(target.videoWidth, target.videoHeight, width, height)
@@ -63,15 +74,46 @@ const KonvaVideo: React.FC<Props> = props => {
     if (current) {
       const animation = new Konva.Animation(() => {
         if (current.width() !== 0 && current.height() !== 0) {
+          const layer = current.getLayer()
+          if (layer) layer.batchDraw()
           current.cache()
         }
       }, current)
-      animation.start()
+      if (!_pauseRef.current) {
+        animation.start()
+        _pauseRef.current = false
+      }
+      _animationRef.current = animation
       return () => {
         animation.stop()
       }
     }
-  }, [_videoRef, width, height])
+  }, [_videoRef, _animationRef, _pauseRef,  width, height])
+  useImperativeHandle(ref, () => {
+    return {
+      start() {
+        if (_animationRef.current) {
+          _animationRef.current.start()
+        }
+      },
+      stop() {
+        if (_animationRef.current) {
+          _animationRef.current.stop()
+        }
+      },
+      toggle() {
+        _pauseRef.current = !_pauseRef.current
+        if (_animationRef.current) {
+          if (_pauseRef.current) {
+            _animationRef.current.stop()
+          } else {
+            _animationRef.current.start()
+          }
+        }
+        return _pauseRef.current
+      }
+    }
+  }, [_animationRef])
   return (
     <>
       <Image
@@ -90,4 +132,4 @@ const KonvaVideo: React.FC<Props> = props => {
     </>
   )
 }
-export default KonvaVideo
+export default forwardRef(KonvaVideo)

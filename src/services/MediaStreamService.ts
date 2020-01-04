@@ -1,22 +1,31 @@
 class MediaStreamService {
-  getVideoStream(videoStreamId: string = '') {
+  async checkVideoStream() {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+    })
+    stream.getTracks().forEach(track => {
+      track.stop()
+    })
+    return true
+  }
+  getVideoStream(videoStreamId: string) {
     const constraints = {
       video: {
-        deviceId: {
-          exact: videoStreamId
-        },
+        deviceId: videoStreamId,
         width: {
-          ideal: 960
+          ideal: 1024
         },
         height: {
-          ideal: 640
+          ideal: 768
         },
         frameRate: {
           ideal: 60,
           min: 20
         },
         facingMode: 'user',
-      }
+      },
+      audio: false
     }
     return navigator.mediaDevices.getUserMedia(constraints)
   }

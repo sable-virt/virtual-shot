@@ -15,7 +15,7 @@ export function resizeContain(width: number, height: number, maxWidth: number, m
   }
   return size
 }
-export function createVideoElement(stream: MediaStream | undefined) {
+export function createVideoElement(stream: MediaStream | null) {
   const video: HTMLVideoElement = document.createElement('video')
   video.muted = true
   video.autoplay = true
