@@ -8,7 +8,7 @@ FaceRig　Virtual　Camera
 
 ## 準備
 1. FaceRigを起動し、背景を緑にします
-2. virtual shotのページを開き、合成したい画像を選択します
+2. [virtual shot]( https://sable-virt.github.io/virtual-shot)のページを開き、合成したい画像を選択します
 3. セレクトボックスからFaceRig Virtual Cameraを選択します
 4. カメラ取り込みボタンをクリックします
 
