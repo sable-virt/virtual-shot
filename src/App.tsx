@@ -12,7 +12,6 @@ const App: React.FC = () => {
     loadDevice,
   } = useApp()
   const [image, setImage] = useState<HTMLImageElement | null>(null)
-  const [size, setSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
   const [deviceId, setDeviceId] = useState<string | undefined>()
   const [stream, setStream] = useState<MediaStream | null>(null)
   const _handleOnChangeVideo = useCallback(async (info: MediaDeviceInfo | undefined) => {
@@ -24,10 +23,6 @@ const App: React.FC = () => {
   }, [])
   const _handleOnChangeImage = useCallback((image: HTMLImageElement | null) => {
     setImage(image)
-    setSize({
-      width: image ? image.width : 0,
-      height: image ? image.height : 0,
-    })
   }, [])
   const _handleOnLoadDevice = useCallback(() => {
     if (deviceId) {
@@ -51,22 +46,25 @@ const App: React.FC = () => {
     }
   }, [stream])
   if (!initialized) {
-    return <div>loading...</div>
+    return <div className="loading">Loading...</div>
   }
   if (!available) {
-    return <div>カメラへのアクセスができませんでした</div>
+    return <div className="error">カメラへのアクセスができませんでした</div>
   }
   return (
     <div className="app">
-      <ImageInput onChange={_handleOnChangeImage}/>
-      <MediaSelector
-        type="videoinput"
-        deviceId={deviceId}
-        onChange={_handleOnChangeVideo}
-      />
-      <button onClick={_handleOnLoadDevice}>カメラ取り込み</button>
+      <header className="header">
+        <div className="header-form">
+          <ImageInput onChange={_handleOnChangeImage}/>
+          <MediaSelector
+            type="videoinput"
+            deviceId={deviceId}
+            onChange={_handleOnChangeVideo}
+          />
+          <button onClick={_handleOnLoadDevice}>カメラ取り込み</button>
+        </div>
+      </header>
       <EditorContainer
-        size={size}
         image={image}
         stream={stream}
       />

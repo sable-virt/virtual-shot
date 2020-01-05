@@ -9,25 +9,24 @@ const DEFAULT_VIDEO_SIZE = {
   height: 240
 }
 
-export interface Size {
-  width: number
-  height: number
-}
-
 interface Props {
-  size: Size
   image: HTMLImageElement | null
   stream: MediaStream | null
 }
 export const EditorContainer: React.FC<Props> = props => {
   const {
-    size,
     image,
     stream,
   } = props
   const _stageRef = useRef<Stage & StageProps>(null)
   const _videoRef = useRef<KonvaVideoHandler>(null)
   const [selectedId, setSelectedId] = useState<string>()
+  const size = useMemo(() => {
+    return {
+      width: image ? image.width : 0,
+      height: image ? image.height : 0
+    }
+  }, [image])
   const _handleOnMouseLeave = useCallback(() => {
     setSelectedId(undefined)
   }, [])
@@ -58,8 +57,8 @@ export const EditorContainer: React.FC<Props> = props => {
       <KonvaVideo
         ref={_videoRef}
         selected={selectedId === 'camera'}
-        x={size.width - DEFAULT_VIDEO_SIZE.width}
-        y={size.height - DEFAULT_VIDEO_SIZE.height}
+        x={0}
+        y={0}
         width={DEFAULT_VIDEO_SIZE.width}
         height={DEFAULT_VIDEO_SIZE.height}
         stream={stream}
@@ -70,7 +69,7 @@ export const EditorContainer: React.FC<Props> = props => {
   return (
     <div className="editor-container">
       <div className="editor" onMouseLeave={_handleOnMouseLeave}>
-        <Stage width={size.width} height={size.height} onMouseDown={_handleOnMouseDown} ref={_stageRef}>
+        <Stage className="editor-layer" width={size.width} height={size.height} onMouseDown={_handleOnMouseDown} ref={_stageRef}>
           <Layer>
             <Image
               unselectable
@@ -84,10 +83,10 @@ export const EditorContainer: React.FC<Props> = props => {
           </Layer>
         </Stage>
       </div>
-      <div hidden={!_video}>
-        <button type="button" onClick={_handleOnPause}>一時停止</button>
-        <button type="button" onClick={_handleOnExport}>保存</button>
-      </div>
+      <footer className="editor-footer">
+        <button type="button" onClick={_handleOnPause} disabled={!(!!_video)}>一時停止</button>
+        <button type="button" onClick={_handleOnExport} disabled={!(!!_video)}>保存</button>
+      </footer>
     </div>
   )
 }
